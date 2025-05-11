@@ -7,7 +7,7 @@ export const companyRotas = (controller: CompanyController): Router => {
 
     router.post("/", controller.create)
     router.get("/", controller.showAllCompanies)
+    router.put("/:id", controller.updateCompany)
 
     return router
-
 }

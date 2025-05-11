@@ -1,11 +1,11 @@
 import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-// import { User } from "./User";
+import { Users } from "./User";
 
 
 @Entity()
 export class Company {
     @PrimaryGeneratedColumn("uuid")
-    id_company?: number
+    id_company?: string
     @Column()
     fantasy_name?: string
     @Column()
@@ -16,6 +16,6 @@ export class Company {
     state_registration?: string
     @Column("timestamp")
     date_now?: Date
-    // @OneToMany(() => User, (user) => user.company)
-    // users?: User[]; 
+    @OneToMany(() => Users, (user) => user.company)
+    users?: Users[]; 
 }

@@ -20,10 +20,25 @@ export class CompanyController {
                 res.status(error.status).json({ message: error.message})
             }
         }
-    }  
+    }
     
     showAllCompanies = async (req: Request, res: Response): Promise<void> => {
         const companies = await this.service.showAllCompanies()
         res.json(companies)
+    }
+
+    updateCompany = async (req: Request, res: Response): Promise<void> => {
+        const id = req.params.id
+        console.log(id)
+        const { cnpj, fantasy_name, reason_name, state_registration } = req.body
+
+        try {
+            const updateCompany = await this.service.updateCompany(id, {cnpj, fantasy_name, reason_name, state_registration})
+            res.json(updateCompany)
+        } catch (error) {
+            if(error instanceof httpError){
+                res.status(error.status).json({ message: error.message})
+            }
+        }
     }
 }

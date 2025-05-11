@@ -21,4 +21,21 @@ export class CompanyService {
     async showAllCompanies(): Promise<Company[]> {
         return await this.repository.find()
     }
+
+    async updateCompany(id: string, company: Company): Promise<Company> {
+        if(!company.cnpj || !company.fantasy_name || !company.reason_name || !company.state_registration){
+            throw new httpError(400, "Todos os dados são obrigatórios")
+        }
+
+        let idCompany = await this.repository.findOneBy({id_company: id})
+        if(!idCompany || idCompany == null){
+            throw new httpError(404, "Empresa não encontrado")
+        } else {
+            idCompany.cnpj = company.cnpj
+            idCompany.fantasy_name = company.fantasy_name
+            idCompany.reason_name = company.reason_name
+            idCompany.state_registration = company.state_registration
+            return await this.repository.save(idCompany)
+        }
+    }
 }

@@ -1,5 +1,6 @@
 import { DataSource } from "typeorm";
 import {Company} from './model/Company'
+import { Users } from "./model/User";
 
 export const AppDataSource = new DataSource({
     type: "postgres",    
@@ -11,7 +12,7 @@ export const AppDataSource = new DataSource({
     synchronize: true,
     logging: true,
     // dropSchema: true, //adicionar se quiser limpar o banco
-    entities: [Company],
+    entities: [Company, Users],
     subscribers: [],
     migrations: [],
 })
