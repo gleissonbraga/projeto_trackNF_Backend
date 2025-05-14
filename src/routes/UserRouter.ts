@@ -7,7 +7,7 @@ export const userRotas = (controller: UserController): Router => {
 
     router.post("/", controller.create)
     router.put("/:idUser/:idCompany", controller.update)
-    // router.get("/", controller.showAllCompanies)
+    router.get("/:users_cnpj", controller.findUsersByCompany)
 
     return router
 }

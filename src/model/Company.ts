@@ -1,5 +1,6 @@
 import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Users } from "./User";
+import { Supplier } from "./Supplier";
 
 
 @Entity()
@@ -18,4 +19,6 @@ export class Company {
     date_now?: Date
     @OneToMany(() => Users, (user) => user.company)
     users?: Users[]; 
+    @OneToMany(() => Supplier, (supplier) => supplier.company)
+    suplier?: Supplier[]; 
 }

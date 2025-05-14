@@ -12,6 +12,12 @@ export class UserController {
         this.service = service
     }
 
+    findUsersByCompany = async (req: Request, res: Response): Promise<void> => {
+        const cnpj = req.params.users_cnpj
+        const users = await this.service.findUsersByCompany(cnpj)
+        res.json(users)
+    }
+
     create = async (req: Request, res: Response): Promise<void> => {
         const { fantasy_name, reason_name, cnpj, state_registration, name, cpf, email, password } = req.body
         try {

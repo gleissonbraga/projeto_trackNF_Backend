@@ -1,4 +1,4 @@
-import {Repository} from 'typeorm'
+import {DataSource, getRepository, Repository} from 'typeorm'
 import { Users } from '../model/User'
 import { httpError } from '../errors/HttpError'
 import { Company } from '../model/Company'
@@ -11,6 +11,13 @@ export class UserService {
 
     constructor(repository: Repository<Users>){
         this.repository = repository
+    }
+
+
+    async findUsersByCompany(cnpj: string): Promise<Users[]> {
+        const users = await this.repository.createQueryBuilder('user').innerJoinAndSelect('user.company', 'company').where('company.cnpj = :cnpj', {cnpj}).getMany()
+
+        return users
     }
     
     async create(user: Users, company: Company): Promise<Users> {
@@ -29,20 +36,22 @@ export class UserService {
         const companyRepository = AppDataSource.getRepository(Company)
 
         // Verifica na coluna CNPJ se já existe este valor
-        const verifyCnpj = await this.existCompanyCnpj(company.cnpj)
-        const verifyReasonName = await this.existCompanyReasonName(company.reason_name)
         const verifyCpf = await this.existCpf(user.cpf)
         const verifyEmail = await this.existEmail(user.email)
+        const verifyReasonName = await this.existCompanyReasonName(company.reason_name)
+        const verifyCnpj = await this.existCompanyCnpj(company.cnpj)
+        const verifyStateRegistration = await this.existCompanyStateRegistration(company.state_registration)
 
-        // Gera os erros caso já exista algum dos dados nas colunas referentes
         if(verifyCpf){
             throw new httpError(400, `Este CPF já existe`)
         } else if (verifyEmail) {
             throw new httpError(400, `Este Email já existe`)
         } else if(verifyReasonName) {
             throw new httpError(400, `Este Nome Razão já existe`)
-        } else if(verifyCnpj) {
+        } else if(verifyCnpj){
             throw new httpError(400, `Este CNPJ já existe`)
+        } else if(verifyStateRegistration) {
+            throw new httpError(400, `Esta Inscrição Estadual já existe`)
         }
 
         // Cria a empresa
@@ -92,7 +101,7 @@ export class UserService {
 
 
         if(!findCompany || findCompany == null){
-            throw new httpError(400, "Empresa não encontrado")
+            throw new httpError(400, "Empresa não encontrada")
         } else {
 
             findCompany.fantasy_name = company.fantasy_name
@@ -119,19 +128,24 @@ export class UserService {
     }
     
     async existEmail(email: string) {
-        await this.repository.exist({
+        const emailExist = await this.repository.exist({
             where: {email: email}
         })
 
-        return email
+        const teste = emailExist == true ? email : emailExist
+
+        return teste
+
     }
 
     async existCpf(cpf: string) {
-        await this.repository.exist({
+        const cpfExist = await this.repository.exist({
             where: {cpf: cpf}
         })
+        
+        const teste = cpfExist == true ? cpf : cpfExist
 
-        return cpf
+        return teste
     }
 
     async existCompanyCnpj(cnpj: string): Promise<Boolean> {
@@ -142,22 +156,27 @@ export class UserService {
             })
     }
 
-    async existCompanyStateRegistration(state_registration: string): Promise<Boolean> {
+    async existCompanyStateRegistration(state_registration: string) {
         const companyRepository = AppDataSource.getRepository(Company)
 
-        return await companyRepository.exist({ 
+        const existStateRegistration = await companyRepository.exist({ 
             where: { state_registration: state_registration }
         })
+
+        const teste = existStateRegistration == true ? state_registration : existStateRegistration
+        return teste
     }
 
     async existCompanyReasonName(reason_name: string) {
         const companyRepository = AppDataSource.getRepository(Company)
 
-        await companyRepository.exist({ 
+        const existReasonName = await companyRepository.exist({ 
             where: { reason_name: reason_name }
         })
 
-        return reason_name
+        const teste = existReasonName == true ? reason_name : existReasonName
+
+        return teste
     }
 
 }
