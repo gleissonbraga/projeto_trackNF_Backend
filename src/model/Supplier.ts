@@ -20,16 +20,6 @@ export class Supplier {
     phone_number?: string
     @Column("timestamp")
     date_now?: Date
-    @ManyToOne(()=> Company, (company) => company.suplier)
+    @ManyToOne(()=> Company, (company) => company.supplier)
     company?: Company
 }
-
-
-// TABLE supplier
-// id_supplier
-// fantasy_name
-// name_reason
-// state_registration
-// email
-// phone_number
-// date_now

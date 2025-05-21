@@ -20,5 +20,5 @@ export class Company {
     @OneToMany(() => Users, (user) => user.company)
     users?: Users[]; 
     @OneToMany(() => Supplier, (supplier) => supplier.company)
-    suplier?: Supplier[]; 
+    supplier?: Supplier[]; 
 }
