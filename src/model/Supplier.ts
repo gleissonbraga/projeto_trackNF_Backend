@@ -1,5 +1,6 @@
-import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Company } from "./Company";
+import { NfReceived } from "./NfReceived";
 
 
 @Entity()
@@ -22,4 +23,6 @@ export class Supplier {
     date_now?: Date
     @ManyToOne(()=> Company, (company) => company.supplier)
     company?: Company
+    @OneToOne(()=> NfReceived, (nf_received) => nf_received.supplier)
+    nf_received?: NfReceived
 }

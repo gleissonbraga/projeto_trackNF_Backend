@@ -3,27 +3,6 @@ import { Supplier } from '../model/Supplier'
 import { httpError } from '../errors/HttpError'
 import { AppDataSource } from '../data-source'
 import { Company } from '../model/Company'
-import { Http2ServerRequest } from 'http2'
-
-
-//  @PrimaryGeneratedColumn("uuid")
-//     id_supplier?: string
-//     @Column()
-//     fantasy_name?: string
-//     @Column()
-//     reason_name?: string
-//     @Column()
-//     cnpj?: string
-//     @Column()
-//     state_registration?: string
-//     @Column()
-//     email?: string
-//     @Column()
-//     phone_number?: string
-//     @Column("timestamp")
-//     date_now?: Date
-//     @ManyToOne(()=> Company, (company) => company.suplier)
-//     company?: Company
 
 
 export class SupplierService {
@@ -69,17 +48,46 @@ export class SupplierService {
 
     }
 
+
+    async update(supplier: Omit<Supplier, "company" | "date_now">, id_supplier: string){
+        if(!supplier.fantasy_name || !supplier.reason_name || !supplier.cnpj || !supplier.state_registration){
+            throw new httpError(400, `O Nome Fantasia, Nome Razão, CNPJ e inscrição estadual são obrigatórios`)
+        }
+
+        const verifyReasonName = await this.existSupplierReasonName(supplier.reason_name)
+        const verifyCnpj = await this.existSupplierCnpj(supplier.cnpj)
+        const verifyStateRegistration = await this.existSupplierStateRegistration(supplier.state_registration)
+
+        const findSupplier = await this.repository.findOneBy({id_supplier: id_supplier})
+
+        if(verifyReasonName && supplier.reason_name !== findSupplier?.reason_name) {
+            throw new httpError(400, `Este Nome Razão já existe`)
+        } else if(verifyCnpj && supplier.cnpj !== findSupplier?.cnpj){
+            throw new httpError(400, `Este CNPJ já existe`)
+        } else if(verifyStateRegistration && supplier.state_registration !== findSupplier?.state_registration) {
+            throw new httpError(400, `Esta Inscrição Estadual já existe`)
+        }
+
+        if(!findSupplier || findSupplier == null){
+            throw new httpError(400, "Fornecedor não encontrado")
+        } else {
+            findSupplier.reason_name = supplier.reason_name
+            findSupplier.cnpj = supplier.cnpj
+            findSupplier.email = supplier.email
+            findSupplier.fantasy_name = supplier.fantasy_name
+            findSupplier.phone_number = supplier.phone_number
+            findSupplier.state_registration = supplier.state_registration
+
+            return await this.repository.save(findSupplier)
+        }
+
+    }
+
     async findSupplierByCompany(cnpj: string): Promise<Supplier[]> {
         const suppliers = await this.repository.createQueryBuilder('supplier').innerJoinAndSelect('supplier.company', 'company').where('company.cnpj = :cnpj', {cnpj}).getMany()
 
         return suppliers
     }
-
-
-
-
-
-
 
 
     async existEmail(email: string) {
