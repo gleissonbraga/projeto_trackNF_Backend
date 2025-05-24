@@ -23,6 +23,6 @@ export class Supplier {
     date_now?: Date
     @ManyToOne(()=> Company, (company) => company.supplier)
     company?: Company
-    @OneToOne(()=> NfReceived, (nf_received) => nf_received.supplier)
+    @OneToMany(()=> NfReceived, (nf_received) => nf_received.supplier)
     nf_received?: NfReceived
 }

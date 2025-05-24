@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { SupplierService } from "../service/SupplierService";
 import { httpError } from "../errors/HttpError";
+import { JwtPayload } from "jsonwebtoken";
 
 
 export class SupplierController {
@@ -13,9 +14,9 @@ export class SupplierController {
 
     create = async (req: Request, res: Response): Promise<void> => {
         const { fantasy_name, reason_name, cnpj, state_registration, email, phone_number } = req.body
-        const id = req.params.id_company
+        const company = req.user as JwtPayload
         try {
-            const newSupplier = await this.service.create({fantasy_name, reason_name, cnpj, state_registration, email, phone_number}, id)
+            const newSupplier = await this.service.create({fantasy_name, reason_name, cnpj, state_registration, email, phone_number}, company.cnpj)
             res.status(201).json(newSupplier)
         } catch (error) {
             if(error instanceof httpError){
@@ -39,8 +40,8 @@ export class SupplierController {
     }
 
     findSupplierByCompany = async (req: Request, res: Response): Promise<void> => {
-        const cnpj = req.params.company_cnpj
-        const supplier = await this.service.findSupplierByCompany(cnpj)
+        const company = req.user as JwtPayload
+        const supplier = await this.service.findSupplierByCompany(company.cnpj)
         res.json(supplier)
     }
 

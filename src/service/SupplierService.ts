@@ -13,7 +13,7 @@ export class SupplierService {
     }
 
 
-    async create(supplier: Supplier, id_company: string): Promise<Supplier>{
+    async create(supplier: Supplier, cnpj: string): Promise<Supplier>{
         if(!supplier.fantasy_name || !supplier.reason_name || !supplier.cnpj || !supplier.state_registration){
             throw new httpError(400, `O Nome Fantasia, Nome Razão, CNPJ e inscrição estadual são obrigatórios`)
         }
@@ -32,7 +32,7 @@ export class SupplierService {
         }
 
         const companyRepository = AppDataSource.getRepository(Company)
-        const findCompany = await companyRepository.findOneBy({id_company: id_company})
+        const findCompany = await companyRepository.findOneBy({cnpj: cnpj})
 
   
 
