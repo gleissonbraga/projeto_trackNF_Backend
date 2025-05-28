@@ -17,7 +17,7 @@ export class TokenMiddleware{
             try{
                 const infoUser = await this.service.validationToken(token);
                 req.user = infoUser
-            
+                console.log("##################################",req.user)
                 next();        
             }
             catch(err:any) {

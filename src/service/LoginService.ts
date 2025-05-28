@@ -32,7 +32,7 @@ export class LoginService{
             throw new httpError(400, "Senha incorreta" )
         }
 
-        const payload = {nome: user.name, empresa: user?.company?.fantasy_name, cnpj: user?.company?.cnpj}
+        const payload = {nome: user.name, empresa: user?.company?.fantasy_name, cnpj: user?.company?.cnpj, id_company: user?.company?.id_company}
 
         if(!process.env.JWT_KEY) throw new httpError(404, "JWT_KEY não definida nas variáveis de ambiente")
         let token = sign(payload, process.env.JWT_KEY, { expiresIn: '1h'})

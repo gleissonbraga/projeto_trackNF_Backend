@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { UserService } from "../service/UserService";
 import { httpError } from "../errors/HttpError";
+import { JwtPayload } from "jsonwebtoken";
 
 
 
@@ -32,7 +33,8 @@ export class UserController {
 
     update = async (req: Request, res: Response): Promise<void> => {
         const idUser = req.params.idUser
-        const idCompany = req.params.idCompany
+        const user = req.user as JwtPayload
+        const idCompany = user.id_company
         const { fantasy_name, reason_name, name, cpf, email, password } = req.body
         try {
             const updateuser = await this.service.update(idCompany, idUser, {name, cpf, email, password}, {fantasy_name, reason_name})

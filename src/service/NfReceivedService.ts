@@ -1,6 +1,5 @@
 import {Repository} from 'typeorm'
 import { NfReceived } from '../model/NfReceived'
-import { Ticket } from '../model/Ticket'
 import { httpError } from '../errors/HttpError'
 import { AppDataSource } from '../data-source'
 import { Users } from '../model/User'
@@ -29,9 +28,12 @@ export class NfReceivedService {
         const user = await userRepository.findOneBy({id_user: id_user})
         const supplier = await supplierRepository.findOneBy({id_supplier: id_supplier})
 
-        if(!user || !supplier){
-            const verify = user === null ? "Usuário" : "Fornecedor"
-            throw new httpError(400, `${verify} não encontrado`)
+        if(!user || user == null){
+            throw new httpError(400, `Usuário não encontrado`)
+        }
+
+        if(!supplier || supplier == null){
+            throw new httpError(400, `Fornecedor não encontrado`)
         }
 
         const newDate = new Date()
@@ -51,32 +53,6 @@ export class NfReceivedService {
         return await this.repository.save(nf)
     }
 
-    async showNfsByCompanyCnpj(cnpj: string): Promise<any[]> {
-    const nfs = await this.repository
-        .createQueryBuilder('nf')
-        .leftJoinAndSelect('nf.tickets', 'tickets')
-        .leftJoinAndSelect('nf.supplier', 'supplier')
-        .leftJoinAndSelect('nf.users', 'users')
-        .leftJoinAndSelect('supplier.company', 'company')
-        .where('company.cnpj = :cnpj', { cnpj })
-        .getMany();
-
-        const refactor = nfs.map(nf => ({
-            id_nf_received: nf.id_nf_received,
-            date: nf.date_now,
-            id_nf: nf.id_nf,
-            supplier: nf.supplier?.fantasy_name,
-            nf_value: nf.nf_value,
-            tickets: nf.tickets?.map(ticket => ({
-                ticket_value: ticket.ticket_value,
-                due_dat: ticket.due_date
-            })),
-            receivedBy: nf.users?.name
-        }))
-
-        return refactor;
-    }
-
     async update(nf: NfReceived, id_nf_received: string, id_supplier: string, id_user: string): Promise<NfReceived> {
         if (!nf.nf_value || !nf.type_nf || !nf.status) {
             throw new httpError(400, 'Todos os campos obrigatórios da nota fiscal devem ser preenchidos, incluindo ao menos um ticket.')
@@ -91,9 +67,12 @@ export class NfReceivedService {
         const supplier = await supplierRepository.findOneBy({id_supplier: id_supplier})
 
         
-        if(!user || !supplier){
-            const verify = user === null ? "Usuário" : "Fornecedor"
-            throw new httpError(400, `${verify} não encontrado`)
+        if(!user || user == null){
+            throw new httpError(400, `Usuário não encontrado`)
+        }
+
+        if(!supplier || supplier == null){
+            throw new httpError(400, `Fornecedor não encontrado`)
         }
 
         if(nfUpdate == null) {
@@ -119,6 +98,50 @@ export class NfReceivedService {
             return this.repository.save(nfUpdate)
         }
 
+    }
+
+    async showNfsByCompanyCnpj(cnpj: string): Promise<any[]> {
+        const nfs = await this.repository
+            .createQueryBuilder('nf')
+            .leftJoinAndSelect('nf.tickets', 'tickets')
+            .leftJoinAndSelect('nf.supplier', 'supplier')
+            .leftJoinAndSelect('nf.users', 'users')
+            .leftJoinAndSelect('supplier.company', 'company')
+            .where('company.cnpj = :cnpj', { cnpj })
+            .getMany();
+
+        const refactor = nfs.map(nf => ({
+            id_nf_received: nf.id_nf_received,
+            date: nf.date_now,
+            id_nf: nf.id_nf,
+            supplier: nf.supplier?.fantasy_name,
+            nf_value: nf.nf_value,
+            tickets: nf.tickets?.map(ticket => ({
+                ticket_value: ticket.ticket_value,
+                due_dat: ticket.due_date
+            })),
+            receivedBy: nf.users?.name
+        }))
+
+        return refactor;
+    }
+
+    async findByIdNf(id_nf: string, cnpj: string): Promise<NfReceived>{
+
+        const nf = await this.repository
+            .createQueryBuilder('nf')
+            .leftJoinAndSelect('nf.tickets', 'tickets')
+            .leftJoinAndSelect('nf.supplier', 'supplier')
+            .leftJoinAndSelect('nf.users', 'users')
+            .leftJoinAndSelect('supplier.company', 'company')
+            .where('nf.id_nf = :id_nf', { id_nf })
+            .andWhere('company.cnpj = :cnpj', {cnpj})
+            .getOne();
+
+        if(!nf){
+            throw new httpError(400, "Nota não encontrada")
+        }
+        return nf
     }
 
 }

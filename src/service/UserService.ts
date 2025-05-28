@@ -90,14 +90,13 @@ export class UserService {
         const findUser = await this.repository.findOneBy({id_user: id_user})
         const findCompany = await companyRepository.findOneBy({id_company: id_company})
 
-        if(verifyCpf && user.cpf !== findUser?.cpf){
+        if(verifyCpf !== user.cpf && user.cpf !== findUser?.cpf){
             throw new httpError(400, `Este CPF já existe`)
         } else if (verifyEmail && user.email !== findUser?.email) {
             throw new httpError(400, `Este Email já existe`)
-        } else if(verifyReasonName && company.reason_name !== findCompany?.reason_name) {
+        } else if(verifyReasonName !== company.reason_name && company.reason_name !== findCompany?.reason_name) {
             throw new httpError(400, `Este Nome Razão já existe`)
         }
-
 
 
         if(!findCompany || findCompany == null){
@@ -118,7 +117,7 @@ export class UserService {
             const passwordHash = bcrypt.hashSync(user.password, saltRounds)
 
             findUser.name = user.name
-            findUser.cpf = user.cpf
+
             findUser.email = user.email
             findUser.password = passwordHash
             return await this.repository.save(findUser)

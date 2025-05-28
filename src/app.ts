@@ -55,14 +55,15 @@ AppDataSource.initialize().then(async => {
 
   // Routes
   app.post('/api/login', loginController.login);
+  app.post('/api/usuarios', userController.create);
   app.use(tokenMiddleware.verifyAcces.bind(tokenMiddleware));
   // Routes
-  app.use('/api/empresas', companyRotas(companyController));
   app.use('/api/usuarios', userRotas(userController));
+  app.use('/api/empresas', companyRotas(companyController));
   app.use('/api/fornecedores', supplierRotas(supplierController));
   app.use('/api/notasfiscais', nfReceivedRotas(nfController));
 
-  const PORT = 4000;
+  const PORT = 3000;
   app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
   });

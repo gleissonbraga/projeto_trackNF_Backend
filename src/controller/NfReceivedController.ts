@@ -45,4 +45,18 @@ export class NfReceivedController {
             }
         }
     }
+
+
+    findByIdNf = async (req: Request, res: Response): Promise<void> => {
+        const id = req.params.id_nf
+        const user = req.user as JwtPayload
+        try {
+            const nf = await this.service.findByIdNf(id, user.cnpj)
+            res.status(200).json(nf)
+        } catch (error) {
+             if(error instanceof httpError){
+                res.status(error.status).json({ message: error.message})
+            }
+        }
+    }
 }

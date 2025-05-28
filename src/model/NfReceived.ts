@@ -2,7 +2,6 @@ import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, One
 import { Ticket } from "./Ticket";
 import { Supplier } from "./Supplier";
 import { Users } from "./User";
-import { Company } from "./Company";
 
 export enum TypeNF {
   BONIFICACAO = "BONIFICAÇÃO",
@@ -35,8 +34,6 @@ export class NfReceived {
     type_nf?: TypeNF
     @ManyToOne(() => Users, (users) => users.nf_received)
     users?: Users
-    // @ManyToOne(() => Company, (company) => company.nf_received)
-    // company?: Company
     @Column({type: "enum", enum: StatusNF})
     status?: StatusNF
     @Column("timestamp")
