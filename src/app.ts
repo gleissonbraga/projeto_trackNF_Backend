@@ -19,11 +19,16 @@ import { nfReceivedRotas } from './routes/NfReceivedRouter';
 import { LoginService } from './service/LoginService';
 import { LoginController } from './controller/LoginController';
 import { TokenMiddleware } from './middleware/AuthMiddleware';
-
+import cors from 'cors';
+import { Ticket } from './model/Ticket';
+import { TicketService } from './service/TicketService';
+import { TicketsController } from './controller/TicketsController';
+import { ticketsRotas } from './routes/TicketRouter';
 
 AppDataSource.initialize().then(async => {
   const app = express();
   app.use(express.json());
+  app.use(cors())
 
   // Initialize dependencies 
   //Company
@@ -46,6 +51,11 @@ AppDataSource.initialize().then(async => {
   const nfService = new NfReceivedService(nfRepository);
   const nfController = new NfReceivedController(nfService);
 
+  //Tickts
+  const ticketRepository = AppDataSource.getRepository(Ticket);
+  const ticketService = new TicketService(ticketRepository);
+  const ticketController = new TicketsController(ticketService);
+
     //Login
   const loginService = new LoginService(userRepository);
   const loginController = new LoginController(loginService);
@@ -54,7 +64,7 @@ AppDataSource.initialize().then(async => {
   const tokenMiddleware = new TokenMiddleware(loginService)
 
   // Routes
-  app.post('/api/login', loginController.login);
+  app.post('/login', loginController.login);
   app.post('/api/usuarios', userController.create);
   app.use(tokenMiddleware.verifyAcces.bind(tokenMiddleware));
   // Routes
@@ -62,6 +72,7 @@ AppDataSource.initialize().then(async => {
   app.use('/api/empresas', companyRotas(companyController));
   app.use('/api/fornecedores', supplierRotas(supplierController));
   app.use('/api/notasfiscais', nfReceivedRotas(nfController));
+  app.use('/api/boletos', ticketsRotas(ticketController));
 
   const PORT = 3000;
   app.listen(PORT, () => {

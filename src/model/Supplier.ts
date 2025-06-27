@@ -2,6 +2,10 @@ import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, OneToOne, Prima
 import { Company } from "./Company";
 import { NfReceived } from "./NfReceived";
 
+export enum TypeStatus {
+    INATIVO = 'INATIVO',
+    ATIVO = "ATIVO"
+}
 
 @Entity()
 export class Supplier {
@@ -21,6 +25,8 @@ export class Supplier {
     phone_number?: string
     @Column("timestamp")
     date_now?: Date
+    @Column({type: "enum", enum: TypeStatus})
+    status?: TypeStatus
     @ManyToOne(()=> Company, (company) => company.supplier)
     company?: Company
     @OneToMany(()=> NfReceived, (nf_received) => nf_received.supplier)

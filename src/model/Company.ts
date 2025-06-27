@@ -22,6 +22,4 @@ export class Company {
     users?: Users[]; 
     @OneToMany(() => Supplier, (supplier) => supplier.company)
     supplier?: Supplier[];
-    // @OneToMany(() => NfReceived, (nf_received) => nf_received.company)
-    // nf_received?: NfReceived
 }

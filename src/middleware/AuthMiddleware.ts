@@ -9,15 +9,14 @@ export class TokenMiddleware{
     }
 
     async verifyAcces(req: Request, res: Response, next: NextFunction){
-        let token = req.get("Token")
+        const authHeader = req.get("Authorization");
+        const token = authHeader?.split(" ")[1];
         if(!token) {
             res.status(401).json({error: "Nenhum token informado!"});
-        }
-        else {
+        } else {
             try{
                 const infoUser = await this.service.validationToken(token);
                 req.user = infoUser
-                console.log("##################################",req.user)
                 next();        
             }
             catch(err:any) {

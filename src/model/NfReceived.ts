@@ -28,7 +28,6 @@ export class NfReceived {
     @Column()
     nf_value?: number
     @OneToMany(() => Ticket, (ticket) => ticket.nf_received, { cascade: true })
-    @JoinColumn({ name: "ticketIdTicket" })
     tickets?: Ticket[];
     @Column({type: "enum", enum: TypeNF})
     type_nf?: TypeNF

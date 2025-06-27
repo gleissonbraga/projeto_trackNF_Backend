@@ -14,8 +14,15 @@ export class UserController {
     }
 
     findUsersByCompany = async (req: Request, res: Response): Promise<void> => {
-        const cnpj = req.params.users_cnpj
-        const users = await this.service.findUsersByCompany(cnpj)
+        const company = req.user as JwtPayload
+        const users = await this.service.findUsersByCompany(company.cnpj)
+        res.json(users)
+    }
+
+    findByUserId = async (req: Request, res: Response): Promise<void> => {
+        const user = req.user as JwtPayload
+        const userParams = req.params.id_user
+        const users = await this.service.findByUserId(userParams, user.cnpj)
         res.json(users)
     }
 

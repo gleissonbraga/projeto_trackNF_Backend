@@ -7,6 +7,8 @@ export const nfReceivedRotas = (controller: NfReceivedController): Router => {
 
     router.post("/", controller.create)
     router.get("/", controller.showNfs)
+    router.get("/hoje", controller.showNfsAndDateToday)
+    router.get("/retidas", controller.showNfsAndRetained)
     router.get("/:id_nf", controller.findByIdNf)
     router.put("/:id_nf", controller.update)
 

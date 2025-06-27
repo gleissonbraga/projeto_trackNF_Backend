@@ -32,7 +32,23 @@ export class NfReceivedController {
         res.json(nfs)
     }
 
-        update = async (req: Request, res: Response): Promise<void> => {
+    showNfsAndDateToday = async (req: Request, res: Response): Promise<void> => {
+        const user = req.user as JwtPayload
+        const cnpj = user.cnpj
+        console.log(cnpj)
+        const nfs = await this.service.showNfsByCompanyCnpjAndDateToday(cnpj)
+        res.json(nfs)
+    }
+
+    showNfsAndRetained = async (req: Request, res: Response): Promise<void> => {
+        const user = req.user as JwtPayload
+        const cnpj = user.cnpj
+        console.log(cnpj)
+        const nfs = await this.service.showNfsByCompanyCnpjAndRetained(cnpj)
+        res.json(nfs)
+    }
+
+    update = async (req: Request, res: Response): Promise<void> => {
         const {id_nf, nf_value, type_nf, status, tickets, id_supplier, id_user  } = req.body
         const id = req.params.id_nf
 
@@ -46,7 +62,7 @@ export class NfReceivedController {
         }
     }
 
-
+    
     findByIdNf = async (req: Request, res: Response): Promise<void> => {
         const id = req.params.id_nf
         const user = req.user as JwtPayload

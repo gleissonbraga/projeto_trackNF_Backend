@@ -4,6 +4,7 @@ import { httpError } from '../errors/HttpError'
 import { AppDataSource } from '../data-source'
 import { Users } from '../model/User'
 import { Supplier } from '../model/Supplier'
+import { toZonedTime, format } from 'date-fns-tz';
 
 
 
@@ -47,6 +48,7 @@ export class NfReceivedService {
         } else {
             nf.tickets = nf.tickets.map(ticket => {
             ticket.date_now = newDate
+            ticket.status = ticket.status
             return ticket
             })
         }
@@ -93,6 +95,7 @@ export class NfReceivedService {
         } else {
             nfUpdate.tickets = nf.tickets.map(ticket => {
             ticket.date_now = new Date()
+            ticket.status = ticket.status
             return ticket
             })
             return this.repository.save(nfUpdate)
@@ -118,7 +121,8 @@ export class NfReceivedService {
             nf_value: nf.nf_value,
             tickets: nf.tickets?.map(ticket => ({
                 ticket_value: ticket.ticket_value,
-                due_dat: ticket.due_date
+                due_date: ticket.due_date,
+                status: ticket.status
             })),
             receivedBy: nf.users?.name
         }))
@@ -142,6 +146,81 @@ export class NfReceivedService {
             throw new httpError(400, "Nota não encontrada")
         }
         return nf
+    }
+
+     async showNfsByCompanyCnpjAndDateToday(cnpj: string): Promise<any[]> {
+        const today = new Date()
+        const fuso = 'America/Sao_Paulo';
+
+        
+        const zonedDate = toZonedTime(today, fuso);
+        const startOfDay = format(zonedDate, 'yyyy-MM-dd 00:00:00.000');
+        const endOfDay = format(zonedDate, 'yyyy-MM-dd 23:59:59');
+
+
+        const nfs = await this.repository
+            .createQueryBuilder('nf')
+            .leftJoinAndSelect('nf.tickets', 'tickets')
+            .leftJoinAndSelect('nf.supplier', 'supplier')
+            .leftJoinAndSelect('nf.users', 'users')
+            .leftJoinAndSelect('supplier.company', 'company')
+            .where('company.cnpj = :cnpj', { cnpj })
+            .andWhere('nf.date_now BETWEEN :start AND :end', {start: startOfDay, end: endOfDay})
+            .getMany();
+
+        const refactor = nfs.map(nf => ({
+            id_nf_received: nf.id_nf_received,
+            date: nf.date_now,
+            id_nf: nf.id_nf,
+            supplier: nf.supplier?.fantasy_name,
+            nf_value: nf.nf_value,
+            tickets: nf.tickets?.map(ticket => ({
+                ticket_value: ticket.ticket_value,
+                due_date: ticket.due_date,
+                status: ticket.status
+            })),
+            receivedBy: nf.users?.name
+        }))
+
+        return refactor;
+    }
+
+
+        async showNfsByCompanyCnpjAndRetained(cnpj: string): Promise<any[]> {
+
+        const output = "RETIDA"
+
+        const nfs = await this.repository
+            .createQueryBuilder('nf')
+            .leftJoinAndSelect('nf.tickets', 'tickets')
+            .leftJoinAndSelect('nf.supplier', 'supplier')
+            .leftJoinAndSelect('nf.users', 'users')
+            .leftJoinAndSelect('supplier.company', 'company')
+            .where('company.cnpj = :cnpj', { cnpj })
+            .andWhere('nf.status = :output', {output})
+            .getMany();
+
+        const refactor = nfs.map(nf => ({
+            id_nf_received: nf.id_nf_received,
+            date: nf.date_now,
+            id_nf: nf.id_nf,
+            fantasyNameSupplier: nf.supplier?.fantasy_name,
+            reasonNameSupplier: nf.supplier?.fantasy_name,
+            cnpjSupplier: nf.supplier?.cnpj,
+            stateRegistrationSupplier: nf.supplier?.state_registration,
+            emailSupplier: nf.supplier?.email,
+            phoneNumberSupplier: nf.supplier?.phone_number,
+            nf_value: nf.nf_value,
+            status: nf.status,
+            tickets: nf.tickets?.map(ticket => ({
+                ticket_value: ticket.ticket_value,
+                due_date: ticket.due_date,
+                status: ticket.status
+            })),
+            receivedBy: nf.users?.name
+        }))
+
+        return refactor;
     }
 
 }

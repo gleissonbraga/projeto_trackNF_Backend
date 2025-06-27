@@ -13,6 +13,24 @@ export class UserService {
         this.repository = repository
     }
 
+    async findByUserId(id_user: string, cnpj: string): Promise<Users | null>{
+        const user = await this.repository.findOne({
+            where: {
+                id_user: id_user,
+                company: {
+                    cnpj: cnpj
+                }
+            },
+            relations: ['company']
+        })
+
+        if(!user) return null
+
+        const { password , ...userFilter} = user
+
+        return userFilter
+    }
+
 
     async findUsersByCompany(cnpj: string): Promise<Users[]> {
         const users = await this.repository.createQueryBuilder('user').innerJoinAndSelect('user.company', 'company').where('company.cnpj = :cnpj', {cnpj}).getMany()
