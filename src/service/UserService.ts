@@ -1,5 +1,5 @@
 import {DataSource, getRepository, Repository} from 'typeorm'
-import { Users } from '../model/User'
+import { TypeStatus, Users } from '../model/User'
 import { httpError } from '../errors/HttpError'
 import { Company } from '../model/Company'
 import bcrypt from 'bcrypt'
@@ -33,11 +33,66 @@ export class UserService {
 
 
     async findUsersByCompany(cnpj: string): Promise<Users[]> {
-        const users = await this.repository.createQueryBuilder('user').innerJoinAndSelect('user.company', 'company').where('company.cnpj = :cnpj', {cnpj}).getMany()
+        const ativo = TypeStatus.ATIVO
+        const users = await this.repository.
+        createQueryBuilder('user')
+        .innerJoinAndSelect('user.company', 'company')
+        .where('company.cnpj = :cnpj', {cnpj})
+        .andWhere("user.status = :status", {status: ativo})
+        .orderBy("user.name", "ASC")
+        .getMany()
 
         return users
     }
+
     
+    async createUserCompany(user: Users, cnpj: string): Promise<Users> {
+        //  Verifica se os dados estão sendo populados no JSON
+        if(!user.name || !user.cpf || !user.email || !user.password){
+            throw new httpError(400, "Todos os dados são obrigatórios")
+        }
+
+        const companyRepo = AppDataSource.getRepository(Company)
+
+        const company = await companyRepo.findOneBy({cnpj: cnpj});
+
+        //  Verifica se os dados estão sendo populados no JSON
+        if(!company!.fantasy_name || !company!.reason_name || !company!.cnpj || !company!.state_registration){
+            throw new httpError(400, "Todos os dados são obrigatórios")
+        }
+
+        // Verifica na coluna CNPJ se já existe este valor
+        const verifyCpf = await this.existCpf(user.cpf)
+        const verifyEmail = await this.existEmail(user.email)
+
+
+        if(verifyCpf){
+            throw new httpError(400, `Este CPF já existe`)
+        } else if (verifyEmail) {
+            throw new httpError(400, `Este Email já existe`)
+        }
+
+        if(company == null || company == undefined){
+            throw new httpError(400, 'Empresa não encontrada')
+        }
+
+
+        // Crio o hash da senha para maior segurança
+        const saltRounds = 10
+        const passwordHash = bcrypt.hashSync(user.password, saltRounds)
+
+        // Populando os dados criados na entidade usuário para ser inserido na tabela
+        const newDate = new Date()
+        const actieDefault = TypeStatus.ATIVO;
+        user.password = passwordHash
+        user.company = company
+        user.date_now = newDate
+        user.status = actieDefault
+
+        // Crio o Usuário
+        return await this.repository.save(user)
+    }
+
     async create(user: Users, company: Company): Promise<Users> {
         //  Verifica se os dados estão sendo populados no JSON
         if(!user.name || !user.cpf || !user.email || !user.password){
@@ -80,9 +135,11 @@ export class UserService {
         const passwordHash = bcrypt.hashSync(user.password, saltRounds)
 
         // Populando os dados criados na entidade usuário para ser inserido na tabela
+        const actieDefault = TypeStatus.ATIVO;
         user.password = passwordHash
         user.company = newCompany
         user.date_now = newDate
+        user.status = actieDefault
 
         // Crio o Usuário
         return await this.repository.save(user)
@@ -91,7 +148,7 @@ export class UserService {
     async update(id_company: string, id_user: string , user: Users, company: Omit<Company, "cnpj" | "state_registration">): Promise<Users> {
         
         //  Verifica se os dados estão sendo populados no JSON
-        if(!user.name || !user.cpf || !user.email || !user.password){
+        if(!user.name || !user.cpf || !user.email){
             throw new httpError(400, "Todos os dados são obrigatórios")
         }
         //  Verifica se os dados estão sendo populados no JSON
@@ -130,14 +187,21 @@ export class UserService {
         if(!findUser || findUser == null){
             throw new httpError(400, "Usuário não encontrado")
         } else {
-            // Crio o hash da senha para maior segurança
-            const saltRounds = 10
-            const passwordHash = bcrypt.hashSync(user.password, saltRounds)
+
+
+            const isAlreadyHashed = user.password!.startsWith('$2');
+            let finalPassword = user.password!;
+            
+            if (!isAlreadyHashed) {
+            const saltRounds = 10;
+            finalPassword = bcrypt.hashSync(user.password!, saltRounds);
+            }
 
             findUser.name = user.name
 
             findUser.email = user.email
-            findUser.password = passwordHash
+            findUser.password = finalPassword
+            findUser.status = user.status
             return await this.repository.save(findUser)
         }
 
@@ -195,5 +259,64 @@ export class UserService {
 
         return teste
     }
+
+
+      async activeSupplier(id_user: string) {
+        const findUser = await this.repository.findOneBy({
+          id_user: id_user,
+        });
+    
+        if (!findUser) {
+          throw new httpError(401, "Usuário não encontrado");
+        }
+    
+        const active = TypeStatus.ATIVO;
+    
+        findUser.status = active;
+      }
+    
+      async inactiveSupplier(id_user: string) {
+        const findUser = await this.repository.findOneBy({
+          id_user: id_user,
+        });
+    
+        if (!findUser) {
+          throw new httpError(401, "Usuário não encontrado");
+        }
+    
+        const active = TypeStatus.INATIVO;
+    
+        findUser.status = active;
+      }
+    
+      async findUsersActive(cnpj: string): Promise<Users[]> {
+        const ativo = TypeStatus.ATIVO;
+        const findUser = await this.repository.find({
+          where: {
+            status: ativo,
+            company: {
+              cnpj: cnpj,
+            },
+          },
+          relations: ["company"],
+        });
+    
+        return findUser;
+      }
+    
+      async findUsersInactive(cnpj: string): Promise<Users[]> {
+        const inactive = TypeStatus.INATIVO;
+        const findUser = await this.repository.find({
+          where: {
+            status: inactive,
+            company: {
+              cnpj: cnpj,
+            },
+          },
+          relations: ["company"],
+        });
+    
+        return findUser;
+      }
 
 }

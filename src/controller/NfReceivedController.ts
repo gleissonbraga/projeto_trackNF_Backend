@@ -12,7 +12,7 @@ export class NfReceivedController {
     }
 
     create = async (req: Request, res: Response): Promise<void> => {
-        const {id_nf, nf_value, type_nf, status, tickets, id_supplier, id_user  } = req.body
+        const { id_nf, nf_value, type_nf, status, tickets, id_supplier, id_user  } = req.body
 
         try {
             const nf = await this.service.insert({ id_nf, nf_value, type_nf, status, tickets}, id_supplier, id_user)

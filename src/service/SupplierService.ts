@@ -115,10 +115,13 @@ export class SupplierService {
   }
 
   async findSupplierByCompany(cnpj: string): Promise<Supplier[]> {
+    const ativo = TypeStatus.ATIVO
     const suppliers = await this.repository
       .createQueryBuilder("supplier")
       .innerJoinAndSelect("supplier.company", "company")
       .where("company.cnpj = :cnpj", { cnpj })
+      .andWhere("supplier.status = :status", {status: ativo})
+      .orderBy("supplier.fantasy_name", "ASC")
       .getMany();
 
     return suppliers;

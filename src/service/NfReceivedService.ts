@@ -111,14 +111,17 @@ export class NfReceivedService {
             .leftJoinAndSelect('nf.users', 'users')
             .leftJoinAndSelect('supplier.company', 'company')
             .where('company.cnpj = :cnpj', { cnpj })
+            .orderBy('nf.date_now', 'ASC')
             .getMany();
 
         const refactor = nfs.map(nf => ({
             id_nf_received: nf.id_nf_received,
-            date: nf.date_now,
+            date_now: nf.date_now,
             id_nf: nf.id_nf,
             supplier: nf.supplier?.fantasy_name,
             nf_value: nf.nf_value,
+            type_nf: nf.type_nf,
+            status: nf.status,
             tickets: nf.tickets?.map(ticket => ({
                 ticket_value: ticket.ticket_value,
                 due_date: ticket.due_date,

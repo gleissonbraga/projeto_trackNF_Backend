@@ -2,6 +2,11 @@ import { Column, CreateDateColumn, Entity, ManyToOne, OneToOne, PrimaryGenerated
 import { Company } from "./Company";
 import { NfReceived } from "./NfReceived";
 
+export enum TypeStatus {
+    INATIVO = 'INATIVO',
+    ATIVO = "ATIVO"
+}
+
 @Entity()
 export class Users {
     @PrimaryGeneratedColumn("uuid")
@@ -14,6 +19,8 @@ export class Users {
     email?: string
     @Column()
     password?: string
+    @Column({type: "enum", enum: TypeStatus})
+    status?: TypeStatus
     @Column("timestamp")
     date_now?: Date
     @ManyToOne(()=> Company, (company) => company.users)
