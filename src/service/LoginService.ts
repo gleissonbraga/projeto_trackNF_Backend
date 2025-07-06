@@ -37,7 +37,6 @@ export class LoginService{
         if(!process.env.JWT_KEY) throw new httpError(404, "JWT_KEY não definida nas variáveis de ambiente")
         let token = sign(payload, process.env.JWT_KEY, { expiresIn: '1d'})
 
-        console.log(payload)
         return token
     }
 
@@ -51,7 +50,6 @@ export class LoginService{
             }
             return payload
         } catch (err) {
-            console.log(err)
             throw ({id: 401, msg: "Token Invalido"});    
         }
     }

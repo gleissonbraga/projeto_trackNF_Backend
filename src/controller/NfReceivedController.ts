@@ -27,7 +27,6 @@ export class NfReceivedController {
     showNfs = async (req: Request, res: Response): Promise<void> => {
         const user = req.user as JwtPayload
         const cnpj = user.cnpj
-        console.log(cnpj)
         const nfs = await this.service.showNfsByCompanyCnpj(cnpj)
         res.json(nfs)
     }
@@ -35,7 +34,6 @@ export class NfReceivedController {
     showNfsAndDateToday = async (req: Request, res: Response): Promise<void> => {
         const user = req.user as JwtPayload
         const cnpj = user.cnpj
-        console.log(cnpj)
         const nfs = await this.service.showNfsByCompanyCnpjAndDateToday(cnpj)
         res.json(nfs)
     }
@@ -43,7 +41,6 @@ export class NfReceivedController {
     showNfsAndRetained = async (req: Request, res: Response): Promise<void> => {
         const user = req.user as JwtPayload
         const cnpj = user.cnpj
-        console.log(cnpj)
         const nfs = await this.service.showNfsByCompanyCnpjAndRetained(cnpj)
         res.json(nfs)
     }
@@ -68,6 +65,18 @@ export class NfReceivedController {
         const user = req.user as JwtPayload
         try {
             const nf = await this.service.findByIdNf(id, user.cnpj)
+            res.status(200).json(nf)
+        } catch (error) {
+             if(error instanceof httpError){
+                res.status(error.status).json({ message: error.message})
+            }
+        }
+    }
+
+    deleteNf = async (req: Request, res: Response): Promise<void> => {
+        const id = req.params.id_nf
+        try {
+            const nf = await this.service.deleteNf(id)
             res.status(200).json(nf)
         } catch (error) {
              if(error instanceof httpError){

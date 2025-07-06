@@ -29,7 +29,6 @@ export class CompanyController {
 
     updateCompany = async (req: Request, res: Response): Promise<void> => {
         const id = req.params.id
-        console.log(id)
         const { cnpj, fantasy_name, reason_name, state_registration } = req.body
 
         try {

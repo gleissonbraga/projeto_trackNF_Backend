@@ -19,7 +19,7 @@ export class NfReceivedService {
 
     async insert(nf: NfReceived, id_supplier: string, id_user: string) {
         if (!nf.nf_value || !nf.type_nf || !nf.status) {
-            throw new httpError(400, 'Todos os campos obrigatórios da nota fiscal devem ser preenchidos, incluindo ao menos um ticket.')
+            throw new httpError(400, 'Todos os campos obrigatórios da nota fiscal devem ser preenchidos')
         }
 
         const supplierRepository = AppDataSource.getRepository(Supplier)
@@ -111,23 +111,26 @@ export class NfReceivedService {
             .leftJoinAndSelect('nf.users', 'users')
             .leftJoinAndSelect('supplier.company', 'company')
             .where('company.cnpj = :cnpj', { cnpj })
-            .orderBy('nf.date_now', 'ASC')
+            .orderBy('nf.date_now', 'DESC')
             .getMany();
 
         const refactor = nfs.map(nf => ({
             id_nf_received: nf.id_nf_received,
             date_now: nf.date_now,
             id_nf: nf.id_nf,
-            supplier: nf.supplier?.fantasy_name,
+            supplier: nf.supplier?.reason_name,
             nf_value: nf.nf_value,
             type_nf: nf.type_nf,
+            id_supplier: nf.supplier?.id_supplier,
             status: nf.status,
             tickets: nf.tickets?.map(ticket => ({
+                id_ticket: ticket.id_ticket,
                 ticket_value: ticket.ticket_value,
                 due_date: ticket.due_date,
                 status: ticket.status
             })),
-            receivedBy: nf.users?.name
+            receivedBy: nf.users?.name,
+            id_user: nf.users?.id_user,
         }))
 
         return refactor;
@@ -175,6 +178,7 @@ export class NfReceivedService {
             id_nf_received: nf.id_nf_received,
             date: nf.date_now,
             id_nf: nf.id_nf,
+            id_supplier: nf.supplier?.id_supplier,
             supplier: nf.supplier?.fantasy_name,
             nf_value: nf.nf_value,
             tickets: nf.tickets?.map(ticket => ({
@@ -182,7 +186,8 @@ export class NfReceivedService {
                 due_date: ticket.due_date,
                 status: ticket.status
             })),
-            receivedBy: nf.users?.name
+            receivedBy: nf.users?.name,
+            id_user: nf.users?.id_user
         }))
 
         return refactor;
@@ -224,6 +229,19 @@ export class NfReceivedService {
         }))
 
         return refactor;
+    }
+
+    async deleteNf(id_nf: string): Promise<any> {
+        const deleted = await this.repository.delete({id_nf_received: id_nf})
+
+        if(!deleted){
+            throw new httpError(400, "Nota fiscal não encontrada")
+        } else {
+            
+        }
+
+        const msg = {msg: "Nota fiscal Excluida"}
+        return msg
     }
 
 }

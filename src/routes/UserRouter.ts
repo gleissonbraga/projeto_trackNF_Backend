@@ -10,7 +10,7 @@ export const userRotas = (controller: UserController): Router => {
     router.get("/", controller.findUsersByCompany)
     router.get("/inativos", controller.findUsersInactive)
     router.get("/ativos", controller.findUsersActive)
-    router.get("/:id_user", controller.findByUserId)
+    router.get("/usuario", controller.findByUserId)
 
     return router
 }

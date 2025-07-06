@@ -11,6 +11,7 @@ export const nfReceivedRotas = (controller: NfReceivedController): Router => {
     router.get("/retidas", controller.showNfsAndRetained)
     router.get("/:id_nf", controller.findByIdNf)
     router.put("/:id_nf", controller.update)
+    router.delete("/:id_nf", controller.deleteNf)
 
     return router
 }

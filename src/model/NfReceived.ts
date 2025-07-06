@@ -7,7 +7,6 @@ export enum TypeNF {
   BONIFICACAO = "BONIFICAÇÃO",
   VENDA = "VENDA",
   TROCA = "TROCA",
-  DESPESA = "DESPESA",
   PIX = "PIX"
 }
 

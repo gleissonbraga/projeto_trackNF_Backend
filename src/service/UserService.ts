@@ -26,9 +26,7 @@ export class UserService {
 
         if(!user) return null
 
-        const { password , ...userFilter} = user
-
-        return userFilter
+        return user
     }
 
 
@@ -38,7 +36,7 @@ export class UserService {
         createQueryBuilder('user')
         .innerJoinAndSelect('user.company', 'company')
         .where('company.cnpj = :cnpj', {cnpj})
-        .andWhere("user.status = :status", {status: ativo})
+        // .andWhere("user.status = :status", {status: ativo})
         .orderBy("user.name", "ASC")
         .getMany()
 
@@ -84,10 +82,14 @@ export class UserService {
         // Populando os dados criados na entidade usuário para ser inserido na tabela
         const newDate = new Date()
         const actieDefault = TypeStatus.ATIVO;
+
+        const nameUpper = user.name.toUpperCase()
+
         user.password = passwordHash
         user.company = company
         user.date_now = newDate
         user.status = actieDefault
+        user.name = nameUpper
 
         // Crio o Usuário
         return await this.repository.save(user)
@@ -136,10 +138,13 @@ export class UserService {
 
         // Populando os dados criados na entidade usuário para ser inserido na tabela
         const actieDefault = TypeStatus.ATIVO;
+        const nameUpper = user.name.toUpperCase()
         user.password = passwordHash
         user.company = newCompany
         user.date_now = newDate
         user.status = actieDefault
+        user.name = nameUpper
+        
 
         // Crio o Usuário
         return await this.repository.save(user)
@@ -197,7 +202,8 @@ export class UserService {
             finalPassword = bcrypt.hashSync(user.password!, saltRounds);
             }
 
-            findUser.name = user.name
+            const nameUpper = user.name.toLocaleUpperCase()
+            findUser.name = nameUpper
 
             findUser.email = user.email
             findUser.password = finalPassword
@@ -299,6 +305,9 @@ export class UserService {
             },
           },
           relations: ["company"],
+                order: {
+        name: "ASC"
+      }
         });
     
         return findUser;

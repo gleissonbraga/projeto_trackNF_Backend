@@ -20,7 +20,6 @@ export class TokenMiddleware{
                 next();        
             }
             catch(err:any) {
-                console.log(err);
                 res.status(err.id).json({ error: err.msg });
             }
         }

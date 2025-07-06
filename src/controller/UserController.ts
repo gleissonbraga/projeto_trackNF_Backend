@@ -22,7 +22,7 @@ export class UserController {
     findByUserId = async (req: Request, res: Response): Promise<void> => {
         const user = req.user as JwtPayload
         const userParams = req.params.id_user
-        const users = await this.service.findByUserId(userParams, user.cnpj)
+        const users = await this.service.findByUserId(user.id_user, user.cnpj)
         res.json(users)
     }
 

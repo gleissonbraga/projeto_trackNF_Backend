@@ -48,9 +48,13 @@ export class SupplierService {
     } else {
       const actieDefault = TypeStatus.ATIVO;
       const newDate = new Date();
+      const fantasyUpper = supplier.fantasy_name.toLocaleUpperCase()
+      const reasonUpper = supplier.reason_name.toLocaleUpperCase()
       supplier.company = findCompany;
       supplier.date_now = newDate;
       supplier.status = actieDefault;
+      supplier.fantasy_name = fantasyUpper
+      supplier.reason_name = reasonUpper
       return await this.repository.save(supplier);
     }
   }
@@ -102,10 +106,12 @@ export class SupplierService {
     if (!findSupplier || findSupplier == null) {
       throw new httpError(400, "Fornecedor não encontrado");
     } else {
-      findSupplier.reason_name = supplier.reason_name;
+      const fantasyUpper = supplier.fantasy_name.toLocaleUpperCase()
+      const reasonUpper = supplier.reason_name.toLocaleUpperCase()
+      findSupplier.reason_name = reasonUpper;
       findSupplier.cnpj = supplier.cnpj;
       findSupplier.email = supplier.email;
-      findSupplier.fantasy_name = supplier.fantasy_name;
+      findSupplier.fantasy_name = fantasyUpper;
       findSupplier.phone_number = supplier.phone_number;
       findSupplier.state_registration = supplier.state_registration;
       findSupplier.status = supplier.status;
@@ -120,7 +126,7 @@ export class SupplierService {
       .createQueryBuilder("supplier")
       .innerJoinAndSelect("supplier.company", "company")
       .where("company.cnpj = :cnpj", { cnpj })
-      .andWhere("supplier.status = :status", {status: ativo})
+      // .andWhere("supplier.status = :status", {status: ativo})
       .orderBy("supplier.fantasy_name", "ASC")
       .getMany();
 
@@ -234,6 +240,9 @@ export class SupplierService {
         },
       },
       relations: ["company"],
+      order: {
+        reason_name: "ASC"
+      }
     });
 
     return findSuppliers;
@@ -249,6 +258,9 @@ export class SupplierService {
         },
       },
       relations: ["company"],
+            order: {
+        reason_name: "ASC"
+      }
     });
 
     return findSuppliers;
